@@ -2,6 +2,8 @@ package guru.springframework.msscbeerservice.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import guru.springframework.msscbeerservice.bootstrap.BeerLoader;
+import guru.springframework.msscbeerservice.services.BeerService;
 import guru.springframework.msscbeerservice.web.controller.BeerController;
 import guru.springframework.msscbeerservice.web.model.BeerDto;
 import guru.springframework.msscbeerservice.web.model.BeerStyleEnum;
@@ -9,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -33,12 +36,15 @@ class BeerControllerTest {
 
     String beerDtoToJson;
 
+    @MockBean
+    BeerService beerService;
+
     @BeforeEach
     void setUp() throws JsonProcessingException {
         validBeer = BeerDto.builder()
                 .beerName("Porky Dee")
                 .beerStyle(BeerStyleEnum.GOSE)
-                .upc(13441414L)
+                .upc(BeerLoader.BEER_1_UPC)
                 .price(new BigDecimal("13.30"))
                 .build();
 
@@ -47,6 +53,7 @@ class BeerControllerTest {
 
     @Test
     void getBeerById() throws Exception {
+
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/beer/" + UUID.randomUUID().toString())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
