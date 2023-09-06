@@ -41,8 +41,9 @@ public class BeerDto {
     @NotBlank
     private String beerName;
 
+    //TODO - solve enum issue (conversion problems with JPA)
     @NotNull
-    private BeerStyleEnum beerStyle;
+    private String beerStyle;
 
     @NotBlank
     private String upc;

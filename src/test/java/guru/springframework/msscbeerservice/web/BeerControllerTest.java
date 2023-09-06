@@ -2,7 +2,6 @@ package guru.springframework.msscbeerservice.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import guru.springframework.msscbeerservice.bootstrap.BeerLoader;
 import guru.springframework.msscbeerservice.services.BeerService;
 import guru.springframework.msscbeerservice.web.controller.BeerController;
 import guru.springframework.msscbeerservice.web.model.BeerDto;
@@ -43,8 +42,8 @@ class BeerControllerTest {
     void setUp() throws JsonProcessingException {
         validBeer = BeerDto.builder()
                 .beerName("Porky Dee")
-                .beerStyle(BeerStyleEnum.GOSE)
-                .upc(BeerLoader.BEER_1_UPC)
+                .beerStyle(BeerStyleEnum.GOSE.name())
+                .upc("0631234200036")
                 .price(new BigDecimal("13.30"))
                 .build();
 
@@ -74,5 +73,7 @@ class BeerControllerTest {
                         .content(beerDtoToJson))
                 .andExpect(status().isNoContent());
     }
+
+    //TODO test for list API
 
 }
