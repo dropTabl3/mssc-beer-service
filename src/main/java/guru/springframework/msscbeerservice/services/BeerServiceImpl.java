@@ -27,29 +27,6 @@ public class BeerServiceImpl implements BeerService {
 
     private final BeerMapper beerMapper;
 
-    @Cacheable(cacheNames = "beerCache", key = "#beerId", condition = "#showInventory == false")
-    @Override
-    public BeerDto getBeerById(UUID beerId, boolean showInventory) {
-        System.out.println("beerCache : DB is called");
-
-        if (showInventory) {
-            return beerMapper.beerToBeerDtoWithInventory(beerRepository.findById(beerId).orElseThrow(() -> new BusinessException("Beer not found")));
-        } else {
-            return beerMapper.beerToBeerDto(beerRepository.findById(beerId).orElseThrow(() -> new BusinessException("Beer not found")));
-        }
-    }
-
-    @Override
-    public BeerDto saveNewBeer(BeerDto beerDto) {
-        return beerMapper.beerToBeerDtoWithInventory(beerRepository.save(beerMapper.beerDtoToBeer(beerDto)));
-    }
-
-    @Override
-    public BeerDto updateBeer(UUID beerId, BeerDto beerDto) {
-        beerDto.setId(beerId);
-        return beerMapper.beerToBeerDtoWithInventory(beerRepository.saveAndFlush(beerMapper.beerDtoToBeer(beerDto)));
-    }
-
     //The logic behind condition is saying that we only get values from cache if we don't need to call inventory
     //Otherwise, showInventory == true means that cache is never used and inventory is always called
     @Cacheable(cacheNames = "beerListCache", condition = "#showInventory == false")
@@ -85,4 +62,43 @@ public class BeerServiceImpl implements BeerService {
         }
         return beerPage;
     }
+
+    @Cacheable(cacheNames = "beerCache", key = "#beerId", condition = "#showInventory == false")
+    @Override
+    public BeerDto getBeerById(UUID beerId, boolean showInventory) {
+        System.out.println("beerCache : DB is called");
+
+        if (showInventory) {
+            return beerMapper.beerToBeerDtoWithInventory(beerRepository.findById(beerId).orElseThrow(() -> new BusinessException("Beer not found")));
+        } else {
+            return beerMapper.beerToBeerDto(beerRepository.findById(beerId).orElseThrow(() -> new BusinessException("Beer not found")));
+        }
+    }
+
+    @Cacheable(cacheNames = "beerUpcCache", condition = "#showInventory == false")
+    @Override
+    public BeerDto getBeerByUpc(String upc, boolean showInventory) {
+        System.out.println("beerCache : DB is called");
+
+        BeerDto beerDto;
+        if (showInventory) {
+            beerDto = beerMapper.beerToBeerDtoWithInventory(beerRepository.findOneByUpc(upc));
+        } else {
+            beerDto = beerMapper.beerToBeerDto(beerRepository.findOneByUpc(upc));
+        }
+        return beerDto;
+    }
+
+
+    @Override
+    public BeerDto saveNewBeer(BeerDto beerDto) {
+        return beerMapper.beerToBeerDtoWithInventory(beerRepository.save(beerMapper.beerDtoToBeer(beerDto)));
+    }
+
+    @Override
+    public BeerDto updateBeer(UUID beerId, BeerDto beerDto) {
+        beerDto.setId(beerId);
+        return beerMapper.beerToBeerDtoWithInventory(beerRepository.saveAndFlush(beerMapper.beerDtoToBeer(beerDto)));
+    }
+
 }

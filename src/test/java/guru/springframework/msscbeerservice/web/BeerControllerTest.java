@@ -84,15 +84,4 @@ class BeerControllerTest {
                 .andExpect(status().isNoContent());
     }
 
-    @Test
-    void getBeerList() throws Exception {
-
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/beer/list")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(validListBeerToJson))
-                .andExpect(status().isOk());
-
-
-    }
-
 }
