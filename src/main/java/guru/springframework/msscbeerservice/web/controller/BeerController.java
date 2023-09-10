@@ -5,6 +5,7 @@ import guru.springframework.msscbeerservice.web.model.BeerDto;
 import guru.springframework.msscbeerservice.web.model.BeerPagedList;
 import guru.springframework.msscbeerservice.web.model.ListBeerRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -20,8 +21,8 @@ public class BeerController {
     private final BeerService beerService;
 
     @GetMapping("/{beerId}")
-    public ResponseEntity<BeerDto> getBeerById(@PathVariable("beerId") UUID beerId) {
-        return new ResponseEntity<>(beerService.getBeerById(beerId), HttpStatus.OK);
+    public ResponseEntity<BeerDto> getBeerById(@PathVariable("beerId") UUID beerId, @RequestParam(value = "showInventory", required = false) boolean showInventory) {
+        return new ResponseEntity<>(beerService.getBeerById(beerId, showInventory), HttpStatus.OK);
     }
 
     @PostMapping
@@ -36,7 +37,15 @@ public class BeerController {
 
     @GetMapping(value = "/list", produces = {"application/json"})
     public ResponseEntity<BeerPagedList> listBeers(@RequestBody ListBeerRequest listBeerRequest) {
-        BeerPagedList beerPagedList = beerService.listBeers(listBeerRequest.getBeerName(), listBeerRequest.getBeerStyle(), listBeerRequest.getPageRequest());
+        BeerPagedList beerPagedList =
+                beerService.listBeers(
+                        listBeerRequest.getBeerName(),
+                        listBeerRequest.getBeerStyle(),
+                        PageRequest.of(
+                                listBeerRequest.getPageNumber(),
+                                listBeerRequest.getPageSize()
+                        ),
+                        listBeerRequest.isShowInventory());
         return new ResponseEntity<>(beerPagedList, HttpStatus.OK);
     }
 }

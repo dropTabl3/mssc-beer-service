@@ -1,7 +1,6 @@
 package guru.springframework.msscbeerservice.web.model;
 
 import lombok.Data;
-import org.springframework.data.domain.PageRequest;
 
 
 @Data
@@ -13,13 +12,19 @@ public class ListBeerRequest {
     private Integer pageSize;
     private String beerName;
     private String beerStyle;
-    private PageRequest pageRequest;
+    private boolean showInventory;
 
-    public ListBeerRequest(Integer pageNumber, Integer pageSize, String beerName, String beerStyle) {
+    public ListBeerRequest(
+            Integer pageNumber,
+            Integer pageSize,
+            String beerName,
+            BeerStyleEnum beerStyleEnum,
+            boolean showInventory
+    ) {
         this.pageNumber = pageNumber == null || pageNumber < 0 ? DEFAULT_PAGE_NUMBER : pageNumber;
         this.pageSize = pageSize == null || pageSize <= 0 ? DEFAULT_PAGE_SIZE : pageSize;
         this.beerName = beerName;
-        this.beerStyle = beerStyle;
-        this.pageRequest = PageRequest.of(this.pageNumber, this.pageSize);
+        this.beerStyle = beerStyle != null ? beerStyleEnum.toString() : "";
+        this.showInventory = showInventory;
     }
 }

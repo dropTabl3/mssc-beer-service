@@ -3,9 +3,12 @@ package guru.springframework.msscbeerservice.web;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import guru.springframework.msscbeerservice.services.BeerService;
+import guru.springframework.msscbeerservice.services.inventory.BeerInventoryService;
 import guru.springframework.msscbeerservice.web.controller.BeerController;
 import guru.springframework.msscbeerservice.web.model.BeerDto;
 import guru.springframework.msscbeerservice.web.model.BeerStyleEnum;
+import guru.springframework.msscbeerservice.web.model.ListBeerRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Slf4j
 @WebMvcTest(BeerController.class)
 class BeerControllerTest {
 
@@ -31,23 +35,29 @@ class BeerControllerTest {
     @Autowired
     ObjectMapper objectMapper;
 
-    BeerDto validBeer;
-
     String beerDtoToJson;
+
+    String validListBeerToJson;
 
     @MockBean
     BeerService beerService;
 
+    @MockBean
+    BeerInventoryService beerInventoryService;
+
     @BeforeEach
     void setUp() throws JsonProcessingException {
-        validBeer = BeerDto.builder()
+        BeerDto validBeer = BeerDto.builder()
                 .beerName("Porky Dee")
                 .beerStyle(BeerStyleEnum.GOSE.name())
                 .upc("0631234200036")
                 .price(new BigDecimal("13.30"))
                 .build();
 
+        ListBeerRequest validListBeer = new ListBeerRequest(0, 0, "Mango Bobs", BeerStyleEnum.IPA, true);
+
         beerDtoToJson = objectMapper.writeValueAsString(validBeer);
+        validListBeerToJson = objectMapper.writeValueAsString(validListBeer);
     }
 
     @Test
@@ -74,6 +84,15 @@ class BeerControllerTest {
                 .andExpect(status().isNoContent());
     }
 
-    //TODO test for list API
+    @Test
+    void getBeerList() throws Exception {
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/beer/list")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(validListBeerToJson))
+                .andExpect(status().isOk());
+
+
+    }
 
 }

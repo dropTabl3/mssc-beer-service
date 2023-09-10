@@ -8,6 +8,8 @@ import guru.springframework.msscbeerservice.web.model.BeerDto;
 import guru.springframework.msscbeerservice.web.model.BeerPagedList;
 import io.micrometer.core.instrument.util.StringUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
+@Slf4j
 @Service
 public class BeerServiceImpl implements BeerService {
 
@@ -24,28 +27,47 @@ public class BeerServiceImpl implements BeerService {
 
     private final BeerMapper beerMapper;
 
+    @Cacheable(cacheNames = "beerCache", key = "#beerId", condition = "#showInventory == false")
     @Override
-    public BeerDto getBeerById(UUID beerId) {
-        return beerMapper.beerToBeerDto(beerRepository.findById(beerId).orElseThrow(() -> new BusinessException("Beer not found")));
+    public BeerDto getBeerById(UUID beerId, boolean showInventory) {
+        System.out.println("beerCache : DB is called");
+
+        if (showInventory) {
+            return beerMapper.beerToBeerDtoWithInventory(beerRepository.findById(beerId).orElseThrow(() -> new BusinessException("Beer not found")));
+        } else {
+            return beerMapper.beerToBeerDto(beerRepository.findById(beerId).orElseThrow(() -> new BusinessException("Beer not found")));
+        }
     }
 
     @Override
     public BeerDto saveNewBeer(BeerDto beerDto) {
-        return beerMapper.beerToBeerDto(beerRepository.save(beerMapper.beerDtoToBeer(beerDto)));
+        return beerMapper.beerToBeerDtoWithInventory(beerRepository.save(beerMapper.beerDtoToBeer(beerDto)));
     }
 
     @Override
     public BeerDto updateBeer(UUID beerId, BeerDto beerDto) {
         beerDto.setId(beerId);
-        return beerMapper.beerToBeerDto(beerRepository.saveAndFlush(beerMapper.beerDtoToBeer(beerDto)));
+        return beerMapper.beerToBeerDtoWithInventory(beerRepository.saveAndFlush(beerMapper.beerDtoToBeer(beerDto)));
     }
 
+    //The logic behind condition is saying that we only get values from cache if we don't need to call inventory
+    //Otherwise, showInventory == true means that cache is never used and inventory is always called
+    @Cacheable(cacheNames = "beerListCache", condition = "#showInventory == false")
     @Override
-    public BeerPagedList listBeers(String beerName, String beerStyle, PageRequest pageRequest) {
+    //TODO refactor and isolate APIS for every param
+    public BeerPagedList listBeers(String beerName, String beerStyle, PageRequest pageRequest, boolean showInventory) {
+        System.out.println("beerListCache : DB is called");
+
         BeerPagedList beerPagedList;
+
         Page<Beer> beerPage = evaluateSearchFilter(beerName, beerStyle, pageRequest);
-        List<BeerDto> beerDtoList = beerPage.getContent().stream().map(beerMapper::beerToBeerDto).collect(Collectors.toList());
+
+        List<BeerDto> beerDtoList = beerPage.getContent()
+                .stream()
+                .map(showInventory ? beerMapper::beerToBeerDtoWithInventory : beerMapper::beerToBeerDto)
+                .collect(Collectors.toList());
         PageRequest beerPageRequest = PageRequest.of(beerPage.getPageable().getPageNumber(), beerPage.getPageable().getPageSize());
+
         beerPagedList = new BeerPagedList(beerDtoList, beerPageRequest, beerPage.getTotalElements());
         return beerPagedList;
     }
