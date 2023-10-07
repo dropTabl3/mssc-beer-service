@@ -2,7 +2,7 @@ package guru.springframework.msscbeerservice.services.brewing;
 
 import guru.springframework.msscbeerservice.config.JMSConfig;
 import guru.springframework.msscbeerservice.domain.Beer;
-import guru.springframework.msscbeerservice.events.BrewBeerEvent;
+import guru.sfg.common.events.BrewBeerEvent;
 import guru.springframework.msscbeerservice.repositories.BeerRepository;
 import guru.springframework.msscbeerservice.services.inventory.BeerInventoryService;
 import guru.springframework.msscbeerservice.web.mappers.BeerMapper;
@@ -12,7 +12,6 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.util.List;
 
 @Slf4j
@@ -28,8 +27,7 @@ public class BrewingService {
     public void checkForInventory(){
         List<Beer> beers = beerRepository.findAll();
         beers.forEach(beer -> {
-            Integer onHandInventory = beerInventoryService.getOnHandInventory(beer.getUpc());
-            //consumo birre se superano la soglia minima in inventario
+            Integer onHandInventory = beerInventoryService.getOnHandInventory(beer.getId());
             if(beer.getMinOnHand() >= onHandInventory) {
                 jmsTemplate.convertAndSend(JMSConfig.BREWING_REQUEST_QUEUE, new BrewBeerEvent(beerMapper.beerToBeerDto(beer)));
             }
