@@ -20,10 +20,15 @@ import java.util.UUID;
 public class BeerInventoryServiceRestTemplateImpl implements BeerInventoryService {
 
     private final String INVENTORY_PATH = "/api/v1/beer/{beerId}/inventory";
+    private final String INVENTORY_PATH_UPC = "/api/v1/beerUpc/{upc}/inventory";
+
 
     private String beerInventoryServiceHost;
 
     private final RestTemplate restTemplate;
+
+    ParameterizedTypeReference<List<BeerInventoryDto>> typeReference = new ParameterizedTypeReference<List<BeerInventoryDto>>() {
+    };
 
     public void setBeerInventoryServiceHost(String beerInventoryServiceHost) {
         this.beerInventoryServiceHost = beerInventoryServiceHost;
@@ -35,8 +40,7 @@ public class BeerInventoryServiceRestTemplateImpl implements BeerInventoryServic
 
     @Override
     public Integer getOnHandInventory(UUID beerId) {
-        ParameterizedTypeReference<List<BeerInventoryDto>> typeReference = new ParameterizedTypeReference<List<BeerInventoryDto>>() {
-        };
+
 
         ResponseEntity<List<BeerInventoryDto>> responseEntity = restTemplate
                 .exchange(beerInventoryServiceHost + INVENTORY_PATH, HttpMethod.GET, null,
@@ -46,6 +50,22 @@ public class BeerInventoryServiceRestTemplateImpl implements BeerInventoryServic
                 .stream()
                 .mapToInt(BeerInventoryDto::getQuantityOnHand)
                 .sum();
+
+        return onHand;
+    }
+
+    @Override
+    public Integer getOnHandInventory(String upc) {
+
+        ResponseEntity<List<BeerInventoryDto>> responseEntity = restTemplate
+                .exchange(beerInventoryServiceHost + INVENTORY_PATH_UPC, HttpMethod.GET, null,
+                        typeReference, (Object) upc);
+
+        Integer onHand = Objects.requireNonNull(responseEntity.getBody())
+                .stream()
+                .mapToInt(BeerInventoryDto::getQuantityOnHand)
+                .sum();
+
 
         return onHand;
     }
