@@ -27,7 +27,8 @@ public class BrewingService {
     public void checkForInventory(){
         List<Beer> beers = beerRepository.findAll();
         beers.forEach(beer -> {
-            Integer onHandInventory = beerInventoryService.getOnHandInventory(beer.getId());
+            Integer onHandInventory = beerInventoryService.getOnHandInventory(beer.getUpc());
+            log.debug("onHand: " + onHandInventory);
             if(beer.getMinOnHand() >= onHandInventory) {
                 jmsTemplate.convertAndSend(JMSConfig.BREWING_REQUEST_QUEUE, new BrewBeerEvent(beerMapper.beerToBeerDto(beer)));
             }
