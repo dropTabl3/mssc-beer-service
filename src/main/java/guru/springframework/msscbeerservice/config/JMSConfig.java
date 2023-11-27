@@ -11,6 +11,10 @@ import org.springframework.jms.support.converter.MessageType;
 public class JMSConfig {
     public static final String BREWING_REQUEST_QUEUE = "brewing-request";
     public static final String NEW_INVENTORY_QUEUE = "new-inventory";
+    public static final String VALIDATE_ORDER_Q = "validate-order";
+    public static final String VALIDATE_ORDER_RESULT_Q = "validate-order-result";
+
+
 
 
     @Bean
