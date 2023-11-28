@@ -17,9 +17,6 @@ public class BeerOrderValidator {
     public boolean validate(ValidateBeerOrderRequest request) {
         BeerOrderDto beerOrderDto = request.getBeerOrderDto();
         boolean isValid = true;
-        if(beerOrderDto != null && CollectionUtils.isEmpty(beerOrderDto.getBeerOrderLines())){
-            isValid = false;
-        }
         for (BeerOrderLineDto line : beerOrderDto.getBeerOrderLines()) {
             if(beerRepository.findOneByUpc(line.getUpc()) == null) {
                 isValid = false;

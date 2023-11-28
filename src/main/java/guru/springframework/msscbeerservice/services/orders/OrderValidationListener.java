@@ -1,9 +1,6 @@
 package guru.springframework.msscbeerservice.services.orders;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import guru.sfg.common.events.BeerOrderDto;
-import guru.sfg.common.events.BeerOrderLineDto;
 import guru.sfg.common.events.ValidateBeerOrderRequest;
 import guru.sfg.common.events.ValidateBeerOrderResponse;
 import guru.springframework.msscbeerservice.config.JMSConfig;
@@ -12,13 +9,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.Session;
 import javax.transaction.Transactional;
 
 @Slf4j
